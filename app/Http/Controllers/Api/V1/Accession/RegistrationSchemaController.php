@@ -89,8 +89,8 @@ class RegistrationSchemaController extends Controller
                 $user_files_arr = $user_files->toArray();
                 $search = array_search($schema_file->id, array_column($user_files_arr, 'schema_file'));
                 $file = File::findOrFail(@$user_files_arr[$search]['file']);
-                return Storage::extension("{$this->upload_path}/{$file->path}");
-                $file_ext = '.' . pathinfo(storage_path("app/{$this->upload_path}/{$file->path}"), PATHINFO_EXTENSION);
+                $file_ext = explode('.', $file->path); $file_ext = '.' . $file_ext[count($file_ext)-1];
+                // $file_ext = '.' . pathinfo(storage_path("app/{$this->upload_path}/{$file->path}"), PATHINFO_EXTENSION);
                 if (in_array($file_ext, $schema_file->format))
                 {
                     array_push($user_files_accepted, (object) ['file' => $file, 'schema_file' => $schema_files]);
@@ -135,7 +135,9 @@ class RegistrationSchemaController extends Controller
             $path = $this->schema_path . DIRECTORY_SEPARATOR . $store->id;
             if (!Storage::exists($path)) Storage::makeDirectory($path, 0755, true);
             foreach ($user_files_accepted as $key => $value) {
-                $copy = Storage::copy($this->upload_path . DIRECTORY_SEPARATOR . $value->file->path, $path . DIRECTORY_SEPARATOR . $value->file->path);
+                $from = $path_to_upload = $this->upload_path . DIRECTORY_SEPARATOR . $value->file->path;
+                $to = $path . DIRECTORY_SEPARATOR . $value->file->path;
+                if (!Storage::exists($to)) $copy = Storage::copy($from, $to);
                 $store->files()->create([
                     'name' => $value->file->name,
                     'type' => $value->file->type,

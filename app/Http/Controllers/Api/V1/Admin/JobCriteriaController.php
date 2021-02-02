@@ -16,10 +16,10 @@ class JobCriteriaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($work_element)
+    public function index($schema_id, $competency_unit_id, $work_element_id)
     {
         // 
-        $eloquent = JobCriteria::where('work_element_id', $work_element);
+        $eloquent = JobCriteria::where('work_element_id', $work_element_id);
         $response = (new DataTable)
             ->of($eloquent)
             ->make();
@@ -41,7 +41,7 @@ class JobCriteriaController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, $work_element)
+    public function store(Request $request, $schema_id, $competency_unit_id, $work_element_id)
     {
         // make validator
         $validator = Validator::make($request->all(), ([
@@ -60,11 +60,11 @@ class JobCriteriaController extends Controller
 
         // 
         $created = null;
-        DB::transaction(function () use ($request, $work_element, &$created) {
+        DB::transaction(function () use ($request, $work_element_id, &$created) {
             $created = JobCriteria::create(
                 array_merge(
                     $request->only('title'),
-                    ['work_element_id' => $work_element]
+                    ['work_element_id' => $work_element_id]
                 )
             );
         });
@@ -83,9 +83,9 @@ class JobCriteriaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($schema_id, $competency_unit_id, $work_element_id, $job_criteria_id)
     {
-        $job_criteria = JobCriteria::findOrFail($id);
+        $job_criteria = JobCriteria::findOrFail($job_criteria_id);
         return apiResponse(
             $job_criteria,
             'get data success.',
@@ -100,7 +100,7 @@ class JobCriteriaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $schema_id, $competency_unit_id, $work_element_id, $job_criteria_id)
     {
         // make validator
         $validator = Validator::make($request->all(), ([
@@ -118,7 +118,7 @@ class JobCriteriaController extends Controller
         );
 
         // 
-        $job_criteria = JobCriteria::findOrFail($id);
+        $job_criteria = JobCriteria::findOrFail($job_criteria_id);
 
         // 
         $update = null;
@@ -140,9 +140,9 @@ class JobCriteriaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($schema_id, $competency_unit_id, $work_element_id, $job_criteria_id)
     {
-        $ids = explode(',', $id);
+        $ids = explode(',', $job_criteria_id);
         $job_criterias = JobCriteria::findOrFail($ids);
         $destroy = $job_criterias->each(function ($job_criteria, $key) {
             $job_criteria->delete();

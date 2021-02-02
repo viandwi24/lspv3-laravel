@@ -117,7 +117,7 @@ class FileController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function download($id)
+    public function show($id)
     {
         //
         $file = File::findOrFail($id);

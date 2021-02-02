@@ -21,13 +21,8 @@ class SchemaController extends Controller
         $response = (new DataTable)
             ->of($eloquent)
             ->make();
-        return $response;
-
-        $data = apiDataTablesResponse(
-            $eloquent
-        );
         return apiResponse(
-            $data,
+            $response,
             'get data success.',
             true
         );

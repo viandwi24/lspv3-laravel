@@ -16,10 +16,10 @@ class WorkElementController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($competency_unit)
+    public function index($schema_id, $competency_unit_id)
     {
         // 
-        $eloquent = WorkElement::where('competency_unit_id', $competency_unit);
+        $eloquent = WorkElement::where('competency_unit_id', $competency_unit_id);
         $response = (new DataTable)
             ->of($eloquent)
             ->make();
@@ -41,7 +41,7 @@ class WorkElementController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request, $competency_unit)
+    public function store(Request $request, $schema_id, $competency_unit_id)
     {
         // make validator
         $validator = Validator::make($request->all(), ([
@@ -60,11 +60,11 @@ class WorkElementController extends Controller
 
         // 
         $created = null;
-        DB::transaction(function () use ($request, $competency_unit, &$created) {
+        DB::transaction(function () use ($request, $competency_unit_id, &$created) {
             $created = WorkElement::create(
                 array_merge(
                     $request->only('title'),
-                    ['competency_unit_id' => $competency_unit]
+                    ['competency_unit_id' => $competency_unit_id]
                 )
             );
         });
@@ -83,9 +83,9 @@ class WorkElementController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($schema_id, $competency_unit_id, $work_element_id)
     {
-        $work_element = WorkElement::findOrFail($id);
+        $work_element = WorkElement::findOrFail($work_element_id);
         return apiResponse(
             $work_element,
             'get data success.',
@@ -100,7 +100,7 @@ class WorkElementController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $schema_id, $competency_unit_id, $work_element_id)
     {
         // make validator
         $validator = Validator::make($request->all(), ([
@@ -118,7 +118,7 @@ class WorkElementController extends Controller
         );
 
         // 
-        $workElement = WorkElement::findOrFail($id);
+        $workElement = WorkElement::findOrFail($work_element_id);
 
         // 
         $update = null;
@@ -140,9 +140,9 @@ class WorkElementController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($schema_id, $competency_unit_id, $work_element_id)
     {
-        $ids = explode(',', $id);
+        $ids = explode(',', $work_element_id);
         $workElements = WorkElement::findOrFail($ids);
         $destroy = $workElements->each(function ($workElement, $key) {
             $workElement->delete();

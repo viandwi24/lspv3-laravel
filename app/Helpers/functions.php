@@ -1,11 +1,12 @@
 <?php
 
+use App\Helpers\DataTable;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Yajra\DataTables\CollectionDataTable;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Facades\DataTables;
 
-if (!function_exists('apiResource'))
+if (!function_exists('apiResponse'))
 {
     /**
      * Make api response
@@ -21,6 +22,25 @@ if (!function_exists('apiResource'))
      */
     function apiResponse($data, string $message, bool $status, string $error_code = null, $errors = null, int $responseCode = null, array $customMeta = [])
     {
+        // if data is DataTable
+        $datatable = null;
+        if ($data instanceof DataTable || (isset($data['datatable']) && $data['datatable'] == true))
+        {
+            if ($data instanceof DataTable) $data = $data->make();
+            $datatable = $data;
+            $data = $data['data'];
+            $customMeta['queries'] = $datatable['queries'];
+            $customMeta['input'] = $datatable['input'];
+            if (isset($datatable['totalRecords'])) $customMeta['totalRecords'] = $datatable['totalRecords'];
+            if (isset($datatable['meta'])) $customMeta['meta'] = $datatable['meta'];
+            if (isset($datatable['message']))
+            {
+                $error_code = 'datatable.error';
+                $errors['datatable'] = $datatable['message'];
+            }
+        }
+
+
         // a data must extends JsonResource
         if (($data instanceof JsonResource)) $httpresource = $data;
         else $httpresource = new JsonResource($data);
@@ -40,59 +60,8 @@ if (!function_exists('apiResource'))
                 ? $httpresource->additional($meta)->response()
                 : $httpresource->additional($meta)->response()->setStatusCode($responseCode)
             )
-            : response()->json(array_merge(['data' => $data], $meta), ($responseCode == null ? 200 : $responseCode) )
+            : response()->json(array_merge(['data' => $data], $meta), ($responseCode == null ? 200 : $responseCode))
                 ->header('Content-Type', 'application/json')
                 ->header('Accept', 'application/json');
-    }
-}
-
-if (!function_exists('apiDataTablesResponse'))
-{
-    function apiDataTablesResponse($data, $extCallback = null)
-    {
-        $datatables = DataTables::of($data);
-        if ($extCallback != null && is_callable($extCallback))
-        {
-            $result = $extCallback($datatables);
-            if (
-                ($result instanceof EloquentDataTable) or
-                ($result instanceof CollectionDataTable)
-            ) {
-                $datatables = $result;
-            }
-        }
-        
-        // 
-        $builder = $datatables->make();
-        $content = $builder->getOriginalContent();
-
-        // 
-        return $content;
-    } 
-}
-
-if (! function_exists('public_path')) {
-    /**
-     * Get the path to the public folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function public_path($path = '')
-    {
-        return app()->make('path.public').($path ? DIRECTORY_SEPARATOR.ltrim($path, DIRECTORY_SEPARATOR) : $path);
-    }
-}
-
-if (! function_exists('storage_path')) {
-    /**
-     * Get the path to the storage folder.
-     *
-     * @param  string  $path
-     * @return string
-     */
-    function storage_path($path = '')
-    {
-        return app('path.storage').($path ? DIRECTORY_SEPARATOR.$path : $path);
     }
 }

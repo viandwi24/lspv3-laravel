@@ -111,9 +111,9 @@ class CompetencyUnitController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($schema_id, $competency_unit_id)
     {
-        $competency_unit = CompetencyUnit::findOrFail($id);
+        $competency_unit = CompetencyUnit::findOrFail($competency_unit_id);
         return apiResponse(
             $competency_unit,
             'get data success.',
@@ -128,7 +128,7 @@ class CompetencyUnitController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $schema_id, $competency_unit_id)
     {
         // make validator
         $validator = Validator::make($request->all(), ([
@@ -148,7 +148,7 @@ class CompetencyUnitController extends Controller
         );
 
         // 
-        $competency_unit = CompetencyUnit::findOrFail($id);
+        $competency_unit = CompetencyUnit::findOrFail($competency_unit_id);
 
         // 
         $update = null;
@@ -170,9 +170,9 @@ class CompetencyUnitController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($schema_id, $competency_unit_id)
     {
-        $ids = explode(',', $id);
+        $ids = explode(',', $competency_unit_id);
         $competency_units = CompetencyUnit::findOrFail($ids);
         $destroy = $competency_units->each(function ($competency_unit, $key) {
             $competency_unit->delete();
